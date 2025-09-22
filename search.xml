@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<search> 
+  
+  
+    
+    <entry>
+      <title>阻塞机制</title>
+      <link href="/2025/10/01/Go_learning/%E9%98%BB%E5%A1%9E%E6%9C%BA%E5%88%B6/"/>
+      <url>/2025/10/01/Go_learning/%E9%98%BB%E5%A1%9E%E6%9C%BA%E5%88%B6/</url>
+      
+        <content type="html"><![CDATA[<h2 id="🚀-先明确几个点"><a href="#🚀-先明确几个点" class="headerlink" title="🚀 先明确几个点"></a>🚀 先明确几个点</h2><p>我们有两条 goroutine：</p><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">go</span> sum(s[:<span class="built_in">len</span>(s)/<span class="number">2</span>], c) <span class="comment">// 计算 7+2+8 = 17</span></span><br><span class="line"><span class="keyword">go</span> sum(s[<span class="built_in">len</span>(s)/<span class="number">2</span>:], c) <span class="comment">// 计算 -9+4+0 = -5</span></span><br></pre></td></tr></table></figure><p>每个 <code>sum(...)</code> 函数最后都会执行：</p><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">c &lt;- sum <span class="comment">// 把计算结果发到信道 c 中</span></span><br></pre></td></tr></table></figure><p>然后，主线程中有这行代码：</p><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">x, y := &lt;-c, &lt;-c</span><br></pre></td></tr></table></figure><hr><h2 id="🔄-Go-的信道（无缓冲）是-同步阻塞通信"><a href="#🔄-Go-的信道（无缓冲）是-同步阻塞通信" class="headerlink" title="🔄 Go 的信道（无缓冲）是 同步阻塞通信"></a>🔄 Go 的信道（无缓冲）是 <strong>同步阻塞通信</strong></h2><p>默认创建的信道：</p><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">c := <span class="built_in">make</span>(<span class="keyword">chan</span> <span class="type">int</span>)</span><br></pre></td></tr></table></figure><p>是<strong>无缓冲信道</strong>，它的行为特点是：</p><blockquote><p><strong>发送操作（<code>c &lt;- v</code>）会一直阻塞，直到有 goroutine 执行 <code>&lt;-c</code> 来接收这个值为止。接收操作也是一样，必须等对方配对成功。</strong></p></blockquote><hr><h2 id="🔍-那这一段代码中，阻塞到底是怎么发生的？"><a href="#🔍-那这一段代码中，阻塞到底是怎么发生的？" class="headerlink" title="🔍 那这一段代码中，阻塞到底是怎么发生的？"></a>🔍 那这一段代码中，阻塞到底是怎么发生的？</h2><h3 id="①-程序启动后，主-goroutine-执行："><a href="#①-程序启动后，主-goroutine-执行：" class="headerlink" title="① 程序启动后，主 goroutine 执行："></a>① 程序启动后，主 goroutine 执行：</h3><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">go</span> sum(...) <span class="comment">// 启动子 goroutine A</span></span><br><span class="line"><span class="keyword">go</span> sum(...) <span class="comment">// 启动子 goroutine B</span></span><br><span class="line">x, y := &lt;-c, &lt;-c <span class="comment">// 等待从信道 c 接收两个值</span></span><br></pre></td></tr></table></figure><ul><li><p>这两行 <code>&lt;-c, &lt;-c</code> 是在主 goroutine 中执行的。</p></li><li><p>它会阻塞在 <strong>第一个 <code>&lt;-c</code></strong> 上，直到 <strong>任意一个子 goroutine 把结果通过 <code>c &lt;- sum</code> 发出来</strong>。</p></li><li><p>一旦第一个 <code>&lt;-c</code> 拿到值，就执行第二个 <code>&lt;-c</code>，再次阻塞，直到另一个 goroutine 发结果。</p></li></ul><hr><h3 id="②-子-goroutine-中："><a href="#②-子-goroutine-中：" class="headerlink" title="② 子 goroutine 中："></a>② 子 goroutine 中：</h3><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">sum</span><span class="params">(...)</span></span> &#123;</span><br><span class="line">    ...</span><br><span class="line">    c &lt;- sum  <span class="comment">// 计算完毕，尝试发送到信道</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><ul><li><p>每个 goroutine 计算完就尝试往 <code>c</code> 发值。</p></li><li><p>但因为信道<strong>无缓冲</strong>，所以如果主线程还没执行 <code>&lt;-c</code>，<strong>发送方就会阻塞在 <code>c &lt;- sum</code> 上</strong>。</p></li></ul><hr><h3 id="✅-最关键的是-——-发送和接收是成对完成的！"><a href="#✅-最关键的是-——-发送和接收是成对完成的！" class="headerlink" title="✅ 最关键的是 —— 发送和接收是成对完成的！"></a>✅ 最关键的是 —— 发送和接收是成对完成的！</h3><p>所以整个过程是：</p><ol><li><p>主线程 <code>&lt;-c</code> 阻塞等待</p></li><li><p>某个 <code>sum(...)</code> 计算完，执行 <code>c &lt;- sum</code></p></li><li><p>两者配对成功：值传输完成，双方都继续执行</p></li><li><p>主线程继续执行下一个 <code>&lt;-c</code>，再次阻塞，等待另一个 goroutine 发结果</p></li><li><p>第二个 goroutine 也计算完并发送</p></li><li><p>第二次值传输完成，主线程终于拿到两个值，继续执行</p></li></ol><hr><h2 id="📦-图示一下这个配对阻塞过程"><a href="#📦-图示一下这个配对阻塞过程" class="headerlink" title="📦 图示一下这个配对阻塞过程"></a>📦 图示一下这个配对阻塞过程</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">Time →</span><br><span class="line">Goroutine1: [计算完成] ---&gt; [尝试 c &lt;- sum] ===阻塞===→</span><br><span class="line">                                       ↑</span><br><span class="line">GoroutineM:                 [&lt;-c] &lt;====配对完成====</span><br><span class="line">                            [拿到结果]</span><br><span class="line"></span><br><span class="line">然后换第二组值也是这样。</span><br></pre></td></tr></table></figure><hr><h2 id="🧠-所以总结来说："><a href="#🧠-所以总结来说：" class="headerlink" title="🧠 所以总结来说："></a>🧠 所以总结来说：</h2><table><thead><tr><th>操作</th><th>是否阻塞</th><th>条件</th></tr></thead><tbody><tr><td><code>c &lt;- value</code></td><td>会阻塞</td><td>如果还没有 <code>&lt;-c</code> 在接收</td></tr><tr><td><code>&lt;-c</code></td><td>会阻塞</td><td>如果还没有 <code>c &lt;-</code> 发送</td></tr></tbody></table><p>在你的例子中，这个阻塞行为就确保了两个 goroutine 都<strong>确实完成计算</strong>并把结果发送出来，主线程才会继续。</p><hr><p>需要我加一个打印输出的版本，带上 <code>fmt.Println()</code> 来观察阻塞配对过程吗？这样你能看到“谁先谁后”的顺序。</p><h2 id="带缓冲的信道"><a href="#带缓冲的信道" class="headerlink" title="带缓冲的信道"></a>带缓冲的信道</h2><p>信道可以是 <strong>带缓冲的</strong>。将缓冲长度作为第二个参数提供给 <code>make</code> 来初始化一个带缓冲的信道：</p><p>ch :&#x3D; make(chan int, 100)</p><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    ch := <span class="built_in">make</span>(<span class="keyword">chan</span> <span class="type">int</span>, <span class="number">2</span>)</span><br><span class="line">    ch &lt;- <span class="number">1</span></span><br><span class="line">    ch &lt;- <span class="number">2</span></span><br><span class="line">    fmt.Println(<span class="string">&quot;Try to send 3rd value...&quot;</span>)</span><br><span class="line">    ch &lt;- <span class="number">3</span> <span class="comment">// 这里将阻塞</span></span><br><span class="line">    fmt.Println(<span class="string">&quot;Sent 3rd value&quot;</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>]]></content>
+      
+      
+      <categories>
+          
+          <category> GO </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> 并发 </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
+      <title>新的开始</title>
+      <link href="/2025/09/20/misc/%E6%96%B0%E7%9A%84%E5%BC%80%E5%A7%8B/"/>
+      <url>/2025/09/20/misc/%E6%96%B0%E7%9A%84%E5%BC%80%E5%A7%8B/</url>
+      
+        <content type="html"><![CDATA[<blockquote><p>9月17号，推免资格公式，不出意外的，差一名保研。<br>不过无所谓了，15号已经通过工程硕博拿到了名额，终于有书读了。</p></blockquote><hr><h2 id="一些思考"><a href="#一些思考" class="headerlink" title="一些思考"></a>一些思考</h2><p>大三以为美美保研，放弃写论文去做信安赛，还是花费了不少心血不曾想到连决赛都没进去。当时就心灰意冷，决定找找工作准备了一个半月的找工作。期间看牛客，才发现原来计算机大类的学生应该如何学习，应该如何规划自己的大学生活，如何选择科研或者就业。</p><p>原来一开始就走错了路，CSDIY是一个好课程，可惜不适合就业，对于我这种科研不太行的人来说，也许黑马更为适合。<br>任何技术都浅尝辄止，这三年做出过拿的出手的项目吗？</p><hr><h2 id="我的大学四年"><a href="#我的大学四年" class="headerlink" title="我的大学四年"></a>我的大学四年</h2><p>回顾这大学四年，（我还是降转来网安的）感觉什么都没有做，沉浸在考试考了好分数，绩点高了几分的喜悦中，被学生思维所束缚，想卷又不想卷的矛盾冲突。导致挂在保研边缘难受了几个月。</p><p>讨厌全是PPT和吹的天花乱坠的比赛，想完全靠自己真实做出来产品，因此尽心尽力做大创和信安赛，结果不如别人报告和PPT做好看一点，还浪费了大量时间，大二的专业课也没好好学。现在看来，不如随便糊弄过去。</p><hr><p>不想写了，连写完一篇完整的博客的耐心都没了，就到这里吧……</p><hr><h3 id="小目标"><a href="#小目标" class="headerlink" title="小目标"></a>小目标</h3><blockquote><p>立一个小目标吧，从现在开始，在研究生毕业前写够100篇博客。</p></blockquote>]]></content>
+      
+      
+      <categories>
+          
+          <category> 杂谈 </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> 随笔 </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
+      <title>Welcome to my blog</title>
+      <link href="/2025/08/06/hello-world/"/>
+      <url>/2025/08/06/hello-world/</url>
+      
+        <content type="html"><![CDATA[<h2 id="快速开始"><a href="#快速开始" class="headerlink" title="快速开始"></a>快速开始</h2><h3 id="新建一篇文章"><a href="#新建一篇文章" class="headerlink" title="新建一篇文章"></a>新建一篇文章</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">&quot;我的新文章&quot;</span></span><br></pre></td></tr></table></figure><p>更多信息：<a href="https://hexo.io/docs/writing.html">写作</a></p><h3 id="本地运行服务器"><a href="#本地运行服务器" class="headerlink" title="本地运行服务器"></a>本地运行服务器</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure><p>更多信息：<a href="https://hexo.io/docs/server.html">服务器</a></p><h3 id="生成静态文件"><a href="#生成静态文件" class="headerlink" title="生成静态文件"></a>生成静态文件</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure><p>更多信息：<a href="https://hexo.io/docs/generating.html">生成</a></p><h3 id="部署到远程站点"><a href="#部署到远程站点" class="headerlink" title="部署到远程站点"></a>部署到远程站点</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure><p>更多信息：<a href="https://hexo.io/docs/one-command-deployment.html">部署</a></p>]]></content>
+      
+      
+      <categories>
+          
+          <category> 杂谈 </category>
+          
+      </categories>
+      
+      
+    </entry>
+    
+    
+  
+  
+</search>
