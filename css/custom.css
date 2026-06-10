@@ -1,0 +1,18 @@
+@media(min-width:768px){
+  #nav #menus{
+    flex:1;
+    position:relative;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  #nav .menus_items{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  #nav #search-button{
+    position:absolute;
+    right:0;
+  }
+}
