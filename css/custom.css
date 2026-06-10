@@ -1,4 +1,8 @@
 @media(min-width:768px){
+  #nav{
+    display:flex;
+    align-items:center;
+  }
   #nav #menus{
     flex:1;
     position:relative;
