@@ -4,6 +4,35 @@
   
     
     <entry>
+      <title>收藏 · 网络上的好文章</title>
+      <link href="/2026/06/22/collect/%E5%A5%BD%E6%96%87%E7%AB%A0%E6%94%B6%E8%97%8F/"/>
+      <url>/2026/06/22/collect/%E5%A5%BD%E6%96%87%E7%AB%A0%E6%94%B6%E8%97%8F/</url>
+      
+        <content type="html"><![CDATA[<p>这里记录我在网上看到的好文章、好的项目和一些有启发的帖子，持续更新。</p><h2 id="1-应该是目前最强的-PPT-Agent，附上完整思路分享">1. 应该是目前最强的 PPT Agent，附上完整思路分享</h2><ul><li><strong>来源</strong>：<a href="https://linux.do/t/topic/1782304">linux.do</a></li><li><strong>标签</strong>：AI · Agent · PPT</li></ul><p>作者分享了一个 PPT Agent 的完整实现思路：从需求拆解、模板匹配、内容生成到最终排版，端到端走通。</p><h2 id="2-【开源推广】作为一名在读博士生，我在日常是如何与-AI-协作的？——-ai-collab-playbook">2. 【开源推广】作为一名在读博士生，我在日常是如何与 AI 协作的？—— ai-collab-playbook</h2><ul><li><strong>来源</strong>：<a href="https://linux.do/t/topic/2059718">linux.do</a></li><li><strong>标签</strong>：AI · 工作流 · 开源</li></ul><p>一位在读博士生开源了自己的 AI 协作手册，记录了日常在科研、写作、代码等场景下与 AI 协作的实践方法。</p>]]></content>
+      
+      
+      <categories>
+          
+          <category> 杂谈 </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> 收藏 </tag>
+            
+            <tag> AI </tag>
+            
+            <tag> 工具 </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
       <title>两个瓶子摔落问题</title>
       <link href="/2025/10/11/misc/%E4%B8%A4%E4%B8%AA%E7%93%B6%E5%AD%90%E6%91%94%E8%90%BD%E9%97%AE%E9%A2%98/"/>
       <url>/2025/10/11/misc/%E4%B8%A4%E4%B8%AA%E7%93%B6%E5%AD%90%E6%91%94%E8%90%BD%E9%97%AE%E9%A2%98/</url>
