@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="600" viewBox="0 0 900 600" role="img" aria-label="reading cover">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fff7ed"/>
+      <stop offset="1" stop-color="#fce7f3"/>
+    </linearGradient>
+  </defs>
+  <rect width="900" height="600" rx="42" fill="url(#bg)"/>
+  <circle cx="730" cy="120" r="72" fill="#fde68a" opacity="0.85"/>
+  <g fill="#fff" opacity="0.72">
+    <ellipse cx="185" cy="135" rx="72" ry="23"/>
+    <ellipse cx="238" cy="135" rx="54" ry="20"/>
+    <ellipse cx="215" cy="116" rx="42" ry="22"/>
+  </g>
+  <path d="M148 428 C255 372 342 404 450 428 C558 452 663 381 752 432 L752 500 C548 538 334 538 148 500 Z" fill="#ffffff" opacity="0.56"/>
+  <g transform="translate(314 216)">
+    <path d="M0 0 C64 -18 116 -4 150 34 V218 C106 184 52 176 0 194 Z" fill="#ffffff"/>
+    <path d="M150 34 C184 -4 236 -18 300 0 V194 C248 176 194 184 150 218 Z" fill="#fff" opacity="0.92"/>
+    <path d="M38 52 h76 M38 82 h90 M38 112 h70 M188 52 h74 M188 82 h88 M188 112 h66" stroke="#f9a8d4" stroke-width="9" stroke-linecap="round" opacity="0.62"/>
+    <path d="M150 34 v184" stroke="#c4b5fd" stroke-width="5" opacity="0.5"/>
+  </g>
+  <text x="450" y="126" text-anchor="middle" font-family="Nunito, 'Segoe UI', sans-serif" font-size="42" font-weight="700" fill="#9f6474">Reading Notes</text>
+</svg>
