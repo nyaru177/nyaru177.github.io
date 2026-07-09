@@ -13,7 +13,7 @@
       
       <categories>
           
-          <category> 学习笔记 </category>
+          <category> Python AI </category>
           
       </categories>
       
@@ -44,7 +44,7 @@
       
       <categories>
           
-          <category> 杂谈 </category>
+          <category> 杂谈读书 </category>
           
       </categories>
       
@@ -73,7 +73,7 @@
       
       <categories>
           
-          <category> 杂谈 </category>
+          <category> 算法面试 </category>
           
       </categories>
       
@@ -100,12 +100,14 @@
       
       <categories>
           
-          <category> GO </category>
+          <category> Go 后端 </category>
           
       </categories>
       
       
         <tags>
+            
+            <tag> Go </tag>
             
             <tag> 并发 </tag>
             
@@ -125,7 +127,7 @@
       
       <categories>
           
-          <category> 杂谈 </category>
+          <category> 杂谈读书 </category>
           
       </categories>
       
@@ -150,10 +152,16 @@
       
       <categories>
           
-          <category> 杂谈 </category>
+          <category> 杂谈读书 </category>
           
       </categories>
       
+      
+        <tags>
+            
+            <tag> 随笔 </tag>
+            
+        </tags>
       
     </entry>
     
