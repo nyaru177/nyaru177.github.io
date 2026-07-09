@@ -1,0 +1,382 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>从五个练习理解 NumPy 的核心思维 | nyaru177</title><meta name="author" content="nyaru177"><meta name="copyright" content="nyaru177"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="从五个练习理解 NumPy 的核心思维 这组 NumPy 练习看起来只是五段代码：z-score 标准化、余弦相似度矩阵、Softmax、One-Hot 编码和 k-NN 距离矩阵。写完以后我发现，真正值得记住的不是某一行 API，而是 NumPy 处理问题的方式。 简单说，就是先想清楚数组形状，再决定沿哪个维度计算。只要形状对了，很多原本想用循环解决的问题，都可以变成广播、索引或者矩阵乘法。 这">
+<meta property="og:type" content="article">
+<meta property="og:title" content="从五个练习理解 NumPy 的核心思维">
+<meta property="og:url" content="https://nyaru177.github.io/2026/07/08/Python/numpy_five_exercises_blog_summary/index.html">
+<meta property="og:site_name" content="nyaru177">
+<meta property="og:description" content="从五个练习理解 NumPy 的核心思维 这组 NumPy 练习看起来只是五段代码：z-score 标准化、余弦相似度矩阵、Softmax、One-Hot 编码和 k-NN 距离矩阵。写完以后我发现，真正值得记住的不是某一行 API，而是 NumPy 处理问题的方式。 简单说，就是先想清楚数组形状，再决定沿哪个维度计算。只要形状对了，很多原本想用循环解决的问题，都可以变成广播、索引或者矩阵乘法。 这">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://nyaru177.github.io/img/site/cover-reading.svg">
+<meta property="article:published_time" content="2026-07-08T14:55:00.000Z">
+<meta property="article:modified_time" content="2026-07-08T14:54:56.849Z">
+<meta property="article:author" content="nyaru177">
+<meta property="article:tag" content="NumPy">
+<meta property="article:tag" content="Python">
+<meta property="article:tag" content="暑期集训">
+<meta property="article:tag" content="机器学习基础">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://nyaru177.github.io/img/site/cover-reading.svg"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "从五个练习理解 NumPy 的核心思维",
+  "url": "https://nyaru177.github.io/2026/07/08/Python/numpy_five_exercises_blog_summary/",
+  "image": "https://nyaru177.github.io/img/site/cover-reading.svg",
+  "datePublished": "2026-07-08T14:55:00.000Z",
+  "dateModified": "2026-07-08T14:54:56.849Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "nyaru177",
+      "url": "https://nyaru177.github.io"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/banner.svg?format=png"><link rel="canonical" href="https://nyaru177.github.io/2026/07/08/Python/numpy_five_exercises_blog_summary/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          const mediaQueryDark = window.matchMedia('(prefers-color-scheme: dark)')
+          const mediaQueryLight = window.matchMedia('(prefers-color-scheme: light)')
+
+          if (theme === undefined) {
+            if (mediaQueryLight.matches) activateLightMode()
+            else if (mediaQueryDark.matches) activateDarkMode()
+            else {
+              const hour = new Date().getHours()
+              const isNight = hour <= 8 || hour >= 22
+              isNight ? activateDarkMode() : activateLightMode()
+            }
+            mediaQueryDark.addEventListener('change', () => {
+              if (saveToLocal.get('theme') === undefined) {
+                e.matches ? activateDarkMode() : activateLightMode()
+              }
+            })
+          } else {
+            theme === 'light' ? activateLightMode() : activateDarkMode()
+          }
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":true,"top_n_per_article":1,"unescape":false,"pagination":{"enable":false,"hitsPerPage":8},"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '天',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: true
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '从五个练习理解 NumPy 的核心思维',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/custom.css"><meta name="generator" content="Hexo 8.1.2"></head><body><div id="loading-box"><div class="loading-left-bg"></div><div class="loading-right-bg"></div><div class="spinner-box"><div class="configure-border-1"><div class="configure-core"></div></div><div class="configure-border-2"><div class="configure-core"></div></div><div class="loading-word">加载中...</div></div></div><script>(()=>{
+  const $loadingBox = document.getElementById('loading-box')
+  const $body = document.body
+  const preloader = {
+    endLoading: () => {
+      if ($loadingBox.classList.contains('loaded')) return
+      $body.style.overflow = ''
+      $loadingBox.classList.add('loaded')
+    },
+    initLoading: () => {
+      $body.style.overflow = 'hidden'
+      $loadingBox.classList.remove('loaded')
+    }
+  }
+
+  preloader.initLoading()
+
+  if (document.readyState === 'complete') {
+    preloader.endLoading()
+  } else {
+    window.addEventListener('load', preloader.endLoading)
+    document.addEventListener('DOMContentLoaded', preloader.endLoading)
+    // Add timeout protection: force end after 7 seconds
+    setTimeout(preloader.endLoading, 7000)
+  }
+
+  if (false) {
+    btf.addGlobalFn('pjaxSend', preloader.initLoading, 'preloader_init')
+    btf.addGlobalFn('pjaxComplete', preloader.endLoading, 'preloader_end')
+  }
+})()</script><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/site/banner-soft.svg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">6</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">11</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">3</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg fixed" id="page-header" style="background-image: url(/img/site/cover-reading.svg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">nyaru177</span></a><a class="nav-page-title" href="/"><span class="site-name">从五个练习理解 NumPy 的核心思维</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">从五个练习理解 NumPy 的核心思维</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-07-08T14:55:00.000Z" title="发表于 2026-07-08 22:55:00">2026-07-08</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-07-08T14:54:56.849Z" title="更新于 2026-07-08 22:54:56">2026-07-08</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">学习笔记</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">2.4k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>8分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1>从五个练习理解 NumPy 的核心思维</h1>
+<p>这组 NumPy 练习看起来只是五段代码：z-score 标准化、余弦相似度矩阵、Softmax、One-Hot 编码和 k-NN 距离矩阵。写完以后我发现，真正值得记住的不是某一行 API，而是 NumPy 处理问题的方式。</p>
+<p>简单说，就是先想清楚数组形状，再决定沿哪个维度计算。只要形状对了，很多原本想用循环解决的问题，都可以变成广播、索引或者矩阵乘法。</p>
+<p>这篇文章按五个练习整理一下这套思路。</p>
+<h2 id="练习一：z-score-标准化">练习一：z-score 标准化</h2>
+<h3 id="任务">任务</h3>
+<p>给定一个形状为 <code>(100, 5)</code> 的数据矩阵，对每一列做 z-score 标准化，让每一列的均值接近 0，标准差接近 1。</p>
+<h3 id="代码">代码</h3>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"></span><br><span class="line">data = np.random.randn(<span class="number">100</span>, <span class="number">5</span>)</span><br><span class="line"></span><br><span class="line">data_normalized = (</span><br><span class="line">    data - np.mean(data, axis=<span class="number">0</span>, keepdims=<span class="literal">True</span>)</span><br><span class="line">) / np.std(data, axis=<span class="number">0</span>, keepdims=<span class="literal">True</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> np.allclose(np.mean(data_normalized, axis=<span class="number">0</span>), <span class="number">0</span>) <span class="keyword">and</span> np.allclose(np.std(data_normalized, axis=<span class="number">0</span>), <span class="number">1</span>):</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;Data is successfully normalized.&quot;</span>)</span><br></pre></td></tr></table></figure>
+<h3 id="核心逻辑">核心逻辑</h3>
+<p><code>axis=0</code> 表示沿着行方向聚合，也就是对每一列分别计算均值和标准差。</p>
+<p>原始数据形状是：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">data.shape  <span class="comment"># (100, 5)</span></span><br></pre></td></tr></table></figure>
+<p>如果不加 <code>keepdims=True</code>，列均值的形状是：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">np.mean(data, axis=<span class="number">0</span>).shape  <span class="comment"># (5,)</span></span><br></pre></td></tr></table></figure>
+<p>加上 <code>keepdims=True</code> 后，形状变成：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">np.mean(data, axis=<span class="number">0</span>, keepdims=<span class="literal">True</span>).shape  <span class="comment"># (1, 5)</span></span><br></pre></td></tr></table></figure>
+<p>这样后面的广播会更直观：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(<span class="number">100</span>, <span class="number">5</span>) - (<span class="number">1</span>, <span class="number">5</span>) -&gt; (<span class="number">100</span>, <span class="number">5</span>)</span><br></pre></td></tr></table></figure>
+<p>这里 <code>(1, 5)</code> 会在第一维自动广播成 <code>(100, 5)</code>，于是每一列都会减去自己的均值。</p>
+<h3 id="为什么用-np-allclose">为什么用 <code>np.allclose</code></h3>
+<p>标准化后的均值理论上应该是 0，但浮点数计算会有很小的误差，比如 <code>1e-16</code>。所以不能直接写 <code>== 0</code>，更合适的是：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">np.allclose(np.mean(data_normalized, axis=<span class="number">0</span>), <span class="number">0</span>)</span><br></pre></td></tr></table></figure>
+<p>这也是数值计算里一个很常见的习惯：判断相等时，很多时候判断的是足够接近。</p>
+<h2 id="练习二：余弦相似度矩阵">练习二：余弦相似度矩阵</h2>
+<h3 id="任务-2">任务</h3>
+<p>给定形状为 <code>(10, 128)</code> 的矩阵 <code>A</code>，其中每一行是一个 128 维向量。现在要计算 10 个向量两两之间的余弦相似度，输出形状为 <code>(10, 10)</code> 的矩阵。</p>
+<h3 id="代码-2">代码</h3>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"></span><br><span class="line">A = np.random.randn(<span class="number">10</span>, <span class="number">128</span>)</span><br><span class="line"></span><br><span class="line">A_norm = A / np.sqrt(np.<span class="built_in">sum</span>(A ** <span class="number">2</span>, axis=<span class="number">1</span>, keepdims=<span class="literal">True</span>))</span><br><span class="line"></span><br><span class="line">similarity = A_norm @ A_norm.T</span><br></pre></td></tr></table></figure>
+<h3 id="核心逻辑-2">核心逻辑</h3>
+<p>余弦相似度公式是：</p>
+<p>$$
+\cos(x, y) = \frac{x \cdot y}{|x||y|}
+$$</p>
+<p>如果先把每个向量都做 L2 归一化，让每个向量的长度变成 1，那么余弦相似度就可以直接写成点积：</p>
+<p>$$
+\cos(x, y) = x_{\text{norm}} \cdot y_{\text{norm}}
+$$</p>
+<p>关键是先计算每一行的 L2 范数：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">np.sqrt(np.<span class="built_in">sum</span>(A ** <span class="number">2</span>, axis=<span class="number">1</span>, keepdims=<span class="literal">True</span>))</span><br></pre></td></tr></table></figure>
+<p>这里有三个点：</p>
+<ul>
+<li><code>A ** 2</code> 是元素级平方，不是矩阵乘法；</li>
+<li><code>axis=1</code> 表示沿每一行的特征维度求和；</li>
+<li><code>keepdims=True</code> 让范数形状保持为 <code>(10, 1)</code>。</li>
+</ul>
+<p>所以归一化时的形状变化是：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(<span class="number">10</span>, <span class="number">128</span>) / (<span class="number">10</span>, <span class="number">1</span>) -&gt; (<span class="number">10</span>, <span class="number">128</span>)</span><br></pre></td></tr></table></figure>
+<p>最后用矩阵乘法：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">A_norm @ A_norm.T</span><br></pre></td></tr></table></figure>
+<p>形状变化为：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(<span class="number">10</span>, <span class="number">128</span>) @ (<span class="number">128</span>, <span class="number">10</span>) -&gt; (<span class="number">10</span>, <span class="number">10</span>)</span><br></pre></td></tr></table></figure>
+<p>这一步一次性算出了所有向量两两之间的点积，比写双重 <code>for</code> 循环清爽很多。</p>
+<h2 id="练习三：数值稳定版-Softmax">练习三：数值稳定版 Softmax</h2>
+<h3 id="任务-3">任务</h3>
+<p>实现一个可以处理任意批次维度 <code>(..., C)</code> 的 Softmax 函数，并且在最后一维上计算概率分布。</p>
+<h3 id="代码-3">代码</h3>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">softmax</span>(<span class="params">x</span>):</span><br><span class="line">    x_max = np.<span class="built_in">max</span>(x, axis=-<span class="number">1</span>, keepdims=<span class="literal">True</span>)</span><br><span class="line">    exp_x = np.exp(x - x_max)</span><br><span class="line">    sum_exp_x = np.<span class="built_in">sum</span>(exp_x, axis=-<span class="number">1</span>, keepdims=<span class="literal">True</span>)</span><br><span class="line">    <span class="keyword">return</span> exp_x / sum_exp_x</span><br></pre></td></tr></table></figure>
+<h3 id="核心逻辑-3">核心逻辑</h3>
+<p>Softmax 的原始形式是：</p>
+<p>$$
+\text{softmax}(x_i) = \frac{e^{x_i}}{\sum_j e^{x_j}}
+$$</p>
+<p>如果直接计算 <code>np.exp(x)</code>，当输入很大时会溢出。比如 <code>np.exp(1000)</code> 会变成无穷大，后面再除就很容易得到 <code>NaN</code>。</p>
+<p>更稳的写法是先减去最后一维的最大值：</p>
+<p>$$
+\text{softmax}(x_i) = \frac{e^{x_i - \max(x)}}{\sum_j e^{x_j - \max(x)}}
+$$</p>
+<p>这个变换在数学上等价，因为分子和分母同时乘了同一个常数因子，最终比例不变。</p>
+<p>在代码里：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">x_max = np.<span class="built_in">max</span>(x, axis=-<span class="number">1</span>, keepdims=<span class="literal">True</span>)</span><br></pre></td></tr></table></figure>
+<p><code>axis=-1</code> 表示始终沿最后一维计算。这比写死 <code>axis=1</code> 更通用，因为输入可能是：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">(batch, classes)</span><br><span class="line">(batch, time, classes)</span><br><span class="line">(batch, height, width, channels)</span><br></pre></td></tr></table></figure>
+<p>只要类别维或者特征维在最后一维，<code>axis=-1</code> 就能工作。</p>
+<p><code>keepdims=True</code> 仍然是为了让广播稳定：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">x.shape      <span class="comment"># (..., C)</span></span><br><span class="line">x_max.shape  <span class="comment"># (..., 1)</span></span><br></pre></td></tr></table></figure>
+<p>这样 <code>x - x_max</code> 就能自然广播，结果仍然保持原始输入的形状。</p>
+<h2 id="练习四：One-Hot-编码">练习四：One-Hot 编码</h2>
+<h3 id="任务-4">任务</h3>
+<p>实现 <code>one_hot(labels, num_classes)</code>。其中 <code>labels</code> 的形状为 <code>(N,)</code>，返回形状为 <code>(N, num_classes)</code> 的 <code>float32</code> 矩阵。</p>
+<h3 id="代码-4">代码</h3>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">one_hot</span>(<span class="params">labels, num_classes</span>):</span><br><span class="line">    <span class="keyword">return</span> np.eye(num_classes, dtype=np.float32)[labels]</span><br></pre></td></tr></table></figure>
+<h3 id="核心逻辑-4">核心逻辑</h3>
+<p><code>np.eye(num_classes)</code> 会生成一个单位矩阵。例如：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">np.eye(<span class="number">4</span>)</span><br></pre></td></tr></table></figure>
+<p>得到：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">array([</span><br><span class="line">    [<span class="number">1.</span>, <span class="number">0.</span>, <span class="number">0.</span>, <span class="number">0.</span>],</span><br><span class="line">    [<span class="number">0.</span>, <span class="number">1.</span>, <span class="number">0.</span>, <span class="number">0.</span>],</span><br><span class="line">    [<span class="number">0.</span>, <span class="number">0.</span>, <span class="number">1.</span>, <span class="number">0.</span>],</span><br><span class="line">    [<span class="number">0.</span>, <span class="number">0.</span>, <span class="number">0.</span>, <span class="number">1.</span>]</span><br><span class="line">])</span><br></pre></td></tr></table></figure>
+<p>这个单位矩阵可以看成一个类别模板库：</p>
+<ul>
+<li>第 0 行表示类别 0 的 one-hot 编码；</li>
+<li>第 1 行表示类别 1 的 one-hot 编码；</li>
+<li>第 2 行表示类别 2 的 one-hot 编码；</li>
+<li>第 3 行表示类别 3 的 one-hot 编码。</li>
+</ul>
+<p>如果：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">labels = np.array([<span class="number">2</span>, <span class="number">0</span>, <span class="number">1</span>])</span><br></pre></td></tr></table></figure>
+<p>那么：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">np.eye(<span class="number">4</span>, dtype=np.float32)[labels]</span><br></pre></td></tr></table></figure>
+<p>等价于按顺序取出第 2 行、第 0 行、第 1 行，结果是：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">array([</span><br><span class="line">    [<span class="number">0.</span>, <span class="number">0.</span>, <span class="number">1.</span>, <span class="number">0.</span>],</span><br><span class="line">    [<span class="number">1.</span>, <span class="number">0.</span>, <span class="number">0.</span>, <span class="number">0.</span>],</span><br><span class="line">    [<span class="number">0.</span>, <span class="number">1.</span>, <span class="number">0.</span>, <span class="number">0.</span>]</span><br><span class="line">], dtype=np.float32)</span><br></pre></td></tr></table></figure>
+<p>这里用到的是 NumPy 的高级索引。它不是逐个写循环，而是直接用标签数组批量索引单位矩阵的行。</p>
+<h2 id="练习五：向量化实现-k-NN-距离矩阵">练习五：向量化实现 k-NN 距离矩阵</h2>
+<h3 id="任务-5">任务</h3>
+<p>实现 <code>knn_distances(query, database)</code>，不使用 <code>for</code> 循环，一次性计算 <code>Q</code> 个查询向量和 <code>N</code> 个数据库向量之间的欧氏距离。</p>
+<p>输入形状：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">query.shape     <span class="comment"># (Q, D)</span></span><br><span class="line">database.shape  <span class="comment"># (N, D)</span></span><br></pre></td></tr></table></figure>
+<p>输出形状：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">distances.shape <span class="comment"># (Q, N)</span></span><br></pre></td></tr></table></figure>
+<h3 id="代码-5">代码</h3>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">knn_distances</span>(<span class="params">query, database</span>):</span><br><span class="line">    query_3d = query[:, np.newaxis, :]       <span class="comment"># (Q, D) -&gt; (Q, 1, D)</span></span><br><span class="line">    database_3d = database[np.newaxis, :, :] <span class="comment"># (N, D) -&gt; (1, N, D)</span></span><br><span class="line"></span><br><span class="line">    diff = query_3d - database_3d            <span class="comment"># (Q, N, D)</span></span><br><span class="line">    distances = np.sqrt(np.<span class="built_in">sum</span>(diff ** <span class="number">2</span>, axis=-<span class="number">1</span>))</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> distances</span><br></pre></td></tr></table></figure>
+<h3 id="核心逻辑-5">核心逻辑</h3>
+<p>欧氏距离公式是：</p>
+<p>$$
+d(x, y) = \sqrt{\sum_{k=1}^{D}(x_k - y_k)^2}
+$$</p>
+<p>如果直接写循环，通常会写成：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(Q):</span><br><span class="line">    <span class="keyword">for</span> j <span class="keyword">in</span> <span class="built_in">range</span>(N):</span><br><span class="line">        compute_distance(query[i], database[j])</span><br></pre></td></tr></table></figure>
+<p>NumPy 的做法是先通过升维制造广播条件：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">query[:, np.newaxis, :]       <span class="comment"># (Q, D) -&gt; (Q, 1, D)</span></span><br><span class="line">database[np.newaxis, :, :]    <span class="comment"># (N, D) -&gt; (1, N, D)</span></span><br></pre></td></tr></table></figure>
+<p>然后广播相减：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(Q, <span class="number">1</span>, D) - (<span class="number">1</span>, N, D) -&gt; (Q, N, D)</span><br></pre></td></tr></table></figure>
+<p>得到的 <code>diff[i, j, :]</code>，就是第 <code>i</code> 个 query 向量和第 <code>j</code> 个 database 向量在所有特征维度上的差值。</p>
+<p>接下来沿最后一维求平方和：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">np.<span class="built_in">sum</span>(diff ** <span class="number">2</span>, axis=-<span class="number">1</span>)</span><br></pre></td></tr></table></figure>
+<p>形状从：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(Q, N, D) -&gt; (Q, N)</span><br></pre></td></tr></table></figure>
+<p>最后开方得到距离矩阵。</p>
+<h3 id="大数据场景下的改进">大数据场景下的改进</h3>
+<p>广播版本很适合理解机制，但它会创建一个形状为 <code>(Q, N, D)</code> 的三维中间数组。如果 <code>Q</code>、<code>N</code>、<code>D</code> 都很大，内存压力会很高。</p>
+<p>更适合大规模数据的做法是使用平方展开：</p>
+<p>$$
+|u - v|^2 = |u|^2 + |v|^2 - 2uv^T
+$$</p>
+<p>代码是：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">knn_distances_fast</span>(<span class="params">query, database</span>):</span><br><span class="line">    query_sq = np.<span class="built_in">sum</span>(query ** <span class="number">2</span>, axis=<span class="number">1</span>, keepdims=<span class="literal">True</span>)         <span class="comment"># (Q, 1)</span></span><br><span class="line">    database_sq = np.<span class="built_in">sum</span>(database ** <span class="number">2</span>, axis=<span class="number">1</span>, keepdims=<span class="literal">True</span>).T <span class="comment"># (1, N)</span></span><br><span class="line">    cross = query @ database.T                                  <span class="comment"># (Q, N)</span></span><br><span class="line"></span><br><span class="line">    distances_sq = query_sq + database_sq - <span class="number">2</span> * cross</span><br><span class="line">    distances_sq = np.maximum(distances_sq, <span class="number">0</span>)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> np.sqrt(distances_sq)</span><br></pre></td></tr></table></figure>
+<p>这个版本不需要构造 <code>(Q, N, D)</code>，而是直接得到 <code>(Q, N)</code> 的距离矩阵，更接近实际工程中的写法。</p>
+<h2 id="总结：五道题串起来的主线">总结：五道题串起来的主线</h2>
+<p>这五个练习可以看成 NumPy 学习的一个小闭环。</p>
+<p>第一题 z-score 标准化，解决的是如何沿某个维度做统计，并把统计量广播回原数组。这里的重点是 <code>axis</code>、<code>keepdims=True</code> 和广播。</p>
+<p>第二题余弦相似度矩阵，解决的是如何把一组向量之间的两两关系转成矩阵乘法。这里的重点是 L2 归一化、转置和矩阵乘法。</p>
+<p>第三题 Softmax，解决的是如何写出既通用又数值稳定的函数。这里的重点是 <code>axis=-1</code>、减最大值和避免指数上溢出。</p>
+<p>第四题 One-Hot 编码，解决的是如何用高级索引替代手写循环。这里的重点是把单位矩阵看成类别模板库，再用标签数组批量取行。</p>
+<p>第五题 k-NN 距离矩阵，解决的是如何通过升维和广播一次性计算所有两两组合。这里的重点是 <code>np.newaxis</code>、三维广播和沿最后一维聚合。</p>
+<p>它们最后都指向同一个能力：不要只把数组看成一堆数字，要先看它的形状。形状设计清楚以后，很多看似需要循环的问题，都可以转化成一次广播、一次索引或者一次矩阵乘法。</p>
+<h2 id="我对-NumPy-的理解变化">我对 NumPy 的理解变化</h2>
+<p>刚开始写 NumPy 时，我很容易把注意力放在单个函数名上，比如 <code>mean</code>、<code>sum</code>、<code>dot</code>、<code>exp</code>。但写完这几个练习以后会发现，函数名本身不是最难的，难的是知道它在哪个维度上算，算完以后形状怎么变，后面还能不能继续广播。</p>
+<p>现在我会按这个顺序检查：</p>
+<ol>
+<li>先写出输入数组的形状；</li>
+<li>判断要在哪个 <code>axis</code> 上计算；</li>
+<li>判断聚合后是否需要 <code>keepdims=True</code>；</li>
+<li>检查广播时各维度能否从右往左对齐；</li>
+<li>最后再考虑数值稳定性和内存风险。</li>
+</ol>
+<p>这个顺序比死记代码可靠。之后再遇到深度学习里的 batch、channel、embedding、logits、distance matrix，本质上还是在处理数组形状和维度变换。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://nyaru177.github.io">nyaru177</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://nyaru177.github.io/2026/07/08/Python/numpy_five_exercises_blog_summary/">https://nyaru177.github.io/2026/07/08/Python/numpy_five_exercises_blog_summary/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://nyaru177.github.io" target="_blank">nyaru177</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/NumPy/">NumPy</a><a class="post-meta__tags" href="/tags/Python/">Python</a><a class="post-meta__tags" href="/tags/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E5%9F%BA%E7%A1%80/">机器学习基础</a><a class="post-meta__tags" href="/tags/%E6%9A%91%E6%9C%9F%E9%9B%86%E8%AE%AD/">暑期集训</a></div><div class="post-share"><div class="social-share" data-image="/img/site/cover-reading.svg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related full-width" href="/2026/06/22/collect/%E5%A5%BD%E6%96%87%E7%AB%A0%E6%94%B6%E8%97%8F/" title="收藏 · 网络上的好文章"><img class="cover" src="/img/site/cover-code.svg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">收藏 · 网络上的好文章</div></div><div class="info-2"><div class="info-item-1">这里记录我在网上看到的好文章、好的项目和一些有启发的帖子，持续更新。 1. 应该是目前最强的 PPT Agent，附上完整思路分享  来源：linux.do 标签：AI · Agent · PPT  作者分享了一个 PPT Agent 的完整实现思路：从需求拆解、模板匹配、内容生成到最终排版，端到端走通。 2. 【开源推广】作为一名在读博士生，我在日常是如何与 AI 协作的？—— ai-collab-playbook  来源：linux.do 标签：AI · 工作流 · 开源  一位在读博士生开源了自己的 AI 协作手册，记录了日常在科研、写作、代码等场景下与 AI 协作的实践方法。 </div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/site/banner-soft.svg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">nyaru177</div><div class="author-info-description">nyaru177 的个人博客 —— 网络安全 · Go 开发 · 算法笔记</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">6</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">11</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">3</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/nyaru177"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/nyaru177" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="mailto:1770221228@qq.com" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">https://nyaru177.github.io/ 博客地址</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">1.</span> <span class="toc-text">从五个练习理解 NumPy 的核心思维</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BB%83%E4%B9%A0%E4%B8%80%EF%BC%9Az-score-%E6%A0%87%E5%87%86%E5%8C%96"><span class="toc-number">1.1.</span> <span class="toc-text">练习一：z-score 标准化</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%BB%E5%8A%A1"><span class="toc-number">1.1.1.</span> <span class="toc-text">任务</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%A3%E7%A0%81"><span class="toc-number">1.1.2.</span> <span class="toc-text">代码</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A0%B8%E5%BF%83%E9%80%BB%E8%BE%91"><span class="toc-number">1.1.3.</span> <span class="toc-text">核心逻辑</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E7%94%A8-np-allclose"><span class="toc-number">1.1.4.</span> <span class="toc-text">为什么用 np.allclose</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BB%83%E4%B9%A0%E4%BA%8C%EF%BC%9A%E4%BD%99%E5%BC%A6%E7%9B%B8%E4%BC%BC%E5%BA%A6%E7%9F%A9%E9%98%B5"><span class="toc-number">1.2.</span> <span class="toc-text">练习二：余弦相似度矩阵</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%BB%E5%8A%A1-2"><span class="toc-number">1.2.1.</span> <span class="toc-text">任务</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%A3%E7%A0%81-2"><span class="toc-number">1.2.2.</span> <span class="toc-text">代码</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A0%B8%E5%BF%83%E9%80%BB%E8%BE%91-2"><span class="toc-number">1.2.3.</span> <span class="toc-text">核心逻辑</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BB%83%E4%B9%A0%E4%B8%89%EF%BC%9A%E6%95%B0%E5%80%BC%E7%A8%B3%E5%AE%9A%E7%89%88-Softmax"><span class="toc-number">1.3.</span> <span class="toc-text">练习三：数值稳定版 Softmax</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%BB%E5%8A%A1-3"><span class="toc-number">1.3.1.</span> <span class="toc-text">任务</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%A3%E7%A0%81-3"><span class="toc-number">1.3.2.</span> <span class="toc-text">代码</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A0%B8%E5%BF%83%E9%80%BB%E8%BE%91-3"><span class="toc-number">1.3.3.</span> <span class="toc-text">核心逻辑</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BB%83%E4%B9%A0%E5%9B%9B%EF%BC%9AOne-Hot-%E7%BC%96%E7%A0%81"><span class="toc-number">1.4.</span> <span class="toc-text">练习四：One-Hot 编码</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%BB%E5%8A%A1-4"><span class="toc-number">1.4.1.</span> <span class="toc-text">任务</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%A3%E7%A0%81-4"><span class="toc-number">1.4.2.</span> <span class="toc-text">代码</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A0%B8%E5%BF%83%E9%80%BB%E8%BE%91-4"><span class="toc-number">1.4.3.</span> <span class="toc-text">核心逻辑</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BB%83%E4%B9%A0%E4%BA%94%EF%BC%9A%E5%90%91%E9%87%8F%E5%8C%96%E5%AE%9E%E7%8E%B0-k-NN-%E8%B7%9D%E7%A6%BB%E7%9F%A9%E9%98%B5"><span class="toc-number">1.5.</span> <span class="toc-text">练习五：向量化实现 k-NN 距离矩阵</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%BB%E5%8A%A1-5"><span class="toc-number">1.5.1.</span> <span class="toc-text">任务</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%A3%E7%A0%81-5"><span class="toc-number">1.5.2.</span> <span class="toc-text">代码</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A0%B8%E5%BF%83%E9%80%BB%E8%BE%91-5"><span class="toc-number">1.5.3.</span> <span class="toc-text">核心逻辑</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A4%A7%E6%95%B0%E6%8D%AE%E5%9C%BA%E6%99%AF%E4%B8%8B%E7%9A%84%E6%94%B9%E8%BF%9B"><span class="toc-number">1.5.4.</span> <span class="toc-text">大数据场景下的改进</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%BB%E7%BB%93%EF%BC%9A%E4%BA%94%E9%81%93%E9%A2%98%E4%B8%B2%E8%B5%B7%E6%9D%A5%E7%9A%84%E4%B8%BB%E7%BA%BF"><span class="toc-number">1.6.</span> <span class="toc-text">总结：五道题串起来的主线</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%88%91%E5%AF%B9-NumPy-%E7%9A%84%E7%90%86%E8%A7%A3%E5%8F%98%E5%8C%96"><span class="toc-number">1.7.</span> <span class="toc-text">我对 NumPy 的理解变化</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2026/07/08/Python/numpy_five_exercises_blog_summary/" title="从五个练习理解 NumPy 的核心思维"><img src="/img/site/cover-reading.svg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="从五个练习理解 NumPy 的核心思维"/></a><div class="content"><a class="title" href="/2026/07/08/Python/numpy_five_exercises_blog_summary/" title="从五个练习理解 NumPy 的核心思维">从五个练习理解 NumPy 的核心思维</a><time datetime="2026-07-08T14:55:00.000Z" title="发表于 2026-07-08 22:55:00">2026-07-08</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/06/22/collect/%E5%A5%BD%E6%96%87%E7%AB%A0%E6%94%B6%E8%97%8F/" title="收藏 · 网络上的好文章"><img src="/img/site/cover-code.svg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="收藏 · 网络上的好文章"/></a><div class="content"><a class="title" href="/2026/06/22/collect/%E5%A5%BD%E6%96%87%E7%AB%A0%E6%94%B6%E8%97%8F/" title="收藏 · 网络上的好文章">收藏 · 网络上的好文章</a><time datetime="2026-06-22T02:00:00.000Z" title="发表于 2026-06-22 10:00:00">2026-06-22</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2025/10/11/misc/%E4%B8%A4%E4%B8%AA%E7%93%B6%E5%AD%90%E6%91%94%E8%90%BD%E9%97%AE%E9%A2%98/" title="两个瓶子摔落问题"><img src="/img/site/cover-study.svg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="两个瓶子摔落问题"/></a><div class="content"><a class="title" href="/2025/10/11/misc/%E4%B8%A4%E4%B8%AA%E7%93%B6%E5%AD%90%E6%91%94%E8%90%BD%E9%97%AE%E9%A2%98/" title="两个瓶子摔落问题">两个瓶子摔落问题</a><time datetime="2025-10-11T03:43:00.000Z" title="发表于 2025-10-11 11:43:00">2025-10-11</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2025/10/01/Go_learning/%E9%98%BB%E5%A1%9E%E6%9C%BA%E5%88%B6/" title="阻塞机制"><img src="/img/site/cover-reading.svg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="阻塞机制"/></a><div class="content"><a class="title" href="/2025/10/01/Go_learning/%E9%98%BB%E5%A1%9E%E6%9C%BA%E5%88%B6/" title="阻塞机制">阻塞机制</a><time datetime="2025-10-01T04:00:00.000Z" title="发表于 2025-10-01 12:00:00">2025-10-01</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2025/09/20/misc/%E6%96%B0%E7%9A%84%E5%BC%80%E5%A7%8B/" title="新的开始"><img src="/img/site/cover-code.svg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="新的开始"/></a><div class="content"><a class="title" href="/2025/09/20/misc/%E6%96%B0%E7%9A%84%E5%BC%80%E5%A7%8B/" title="新的开始">新的开始</a><time datetime="2025-09-20T10:26:00.000Z" title="发表于 2025-09-20 18:26:00">2025-09-20</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By nyaru177</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 8.1.2</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.5.5</a></span></div><div class="footer_custom_text">I wish you to become your own sun, no need to rely on who's light.<p>Powered by <a target="_blank" href="https://hexo.io/">Hexo</a> & <a target="_blank" href="https://butterfly.js.org/">Butterfly</a> · <a target="_blank" href="https://github.com/nyaru177/">GitHub</a></p></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><div class="js-pjax"><script>(async () => {
+  const showKatex = () => {
+    document.querySelectorAll('#article-container .katex').forEach(el => el.classList.add('katex-show'))
+  }
+
+  if (!window.katex_js_css) {
+    window.katex_js_css = true
+    await btf.getCSS('https://cdn.jsdelivr.net/npm/katex/dist/katex.min.css')
+    if (true) {
+      await btf.getScript('https://cdn.jsdelivr.net/npm/katex/dist/contrib/copy-tex.min.js')
+    }
+  }
+
+  showKatex()
+})()</script></div><script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script><script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}],throwOnError:false});showKatex()"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><i class="fas fa-spinner fa-pulse" id="loading-status" hidden="hidden"></i><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="local-search-input"><input placeholder="搜索" type="text"/></div><hr/><div id="local-search-results"></div><div class="ais-Pagination" id="local-search-pagination" style="display:none;"><ul class="ais-Pagination-list"></ul></div><div id="local-search-stats"></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div></body></html>
