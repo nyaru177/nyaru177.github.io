@@ -54,7 +54,7 @@
 .publication-card{
   display:grid;
   grid-template-columns:minmax(0, 1.1fr) minmax(280px, 0.9fr);
-  gap:1.5rem;
+  gap:1.25rem 1.5rem;
   align-items:start;
   margin-top:1.4rem;
 }
@@ -130,15 +130,27 @@
 }
 
 .publication-figure figcaption{
+  display:block !important;
   margin-top:0.5rem;
+  padding:0 !important;
+  border:0 !important;
+  background:transparent !important;
   color:var(--card-meta);
   font-size:0.78rem;
   line-height:1.4;
   text-align:center;
+  text-shadow:none !important;
+}
+
+.publication-figure figcaption::before,
+.publication-figure figcaption::after{
+  content:none !important;
+  display:none !important;
 }
 
 .publication-abstract{
-  margin-top:1rem;
+  grid-column:1 / -1;
+  margin-top:0.1rem;
 }
 
 .publication-abstract > summary{
@@ -184,17 +196,20 @@
 
 .abstract-body{
   margin-top:0.9rem;
-  padding:1rem 1.1rem;
+  max-height:16rem;
+  overflow:auto;
+  padding:0.9rem 1rem;
   border-left:3px solid var(--theme-color, #49B1F5);
   border-radius:12px;
   background:rgba(73, 177, 245, 0.06);
+  scrollbar-width:thin;
 }
 
 .abstract-body p{
   margin:0;
   color:var(--font-color);
-  font-size:0.95rem;
-  line-height:1.85;
+  font-size:0.92rem;
+  line-height:1.72;
 }
 
 @media(max-width:900px){
