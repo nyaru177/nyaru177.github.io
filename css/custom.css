@@ -21,6 +21,16 @@
   }
 }
 
+#search-button,
+#toggle-menu{
+  appearance:none;
+  border:0;
+  background:transparent;
+  color:inherit;
+  font:inherit;
+  padding:0;
+}
+
 .about-page{
   max-width:1040px;
   margin:0 auto;
